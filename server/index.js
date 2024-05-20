@@ -1,50 +1,59 @@
 const express = require("express");
+const cors = require("cors");
 const dotenv = require("dotenv");
-// const cors = require("cors");
-const bodyParser = require("body-parser");
-const sequelize = require("./utils/sequelize");
-// const userRoutes = require("./routes/userRoutes");
-// const categoryRoutes = require("./routes/categoryRoutes");
-// const productRoutes = require("./routes/productRoutes");
-// const routes = require('./routes/emailRoutes')
+const { sequelize, Sequelize } = require("./models");
+const rootRouter = require("./routers");
 const cookieParser = require("cookie-parser");
-
-
+const passport = require("passport")
+require("./passport")
+const path = require("path");
+const cookieSession = require("cookie-session")
 const app = express();
-// Configuring dotenv
+
 dotenv.config();
+const session = require('express-session');
 
-// Middlewares
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+
+// Use express-session middleware
+app.use(session({
+  secret: 'your_secret_key_here',
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Initialize Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(
+	cors({
+		origin: "http://localhost:3000",
+		methods: "GET,POST,PUT,DELETE",
+		credentials: true,
+	})
+);
+
+
+
+const publicPathDirectory = path.join(__dirname, "public");
+app.use(express.static(publicPathDirectory));
+
 app.use(cookieParser());
+app.use(express.json());
+app.use("/api/v1", rootRouter);
 
-// Static Files
-app.use("/assets", express.static(__dirname + "/public/assets"));
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log("Connection has been established successfully");
+  })
+  .catch((err) => {
+    console.log("Unable to connect to the database", err);
+  });
 
-// Cors
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173",
-//     credentials: true,
-//   })
-// );
+const PORT = process.env.PORT || 8080;
 
-// All Routes
-//  
-
-// Default Route
-app.get("/", (req, res) => {
-  res.send("Hello To Ecommerce Website");
-});
-
-// Server
-const PORT = process.env.PORT ;
-
-// Syncing the database
-sequelize;
-
-// Listening to the server
 app.listen(PORT, () => {
-  console.log(`Store Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port: ${PORT}`);
 });
+
