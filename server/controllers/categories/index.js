@@ -1,5 +1,3 @@
-
-
 const { Categories } = require('../../models'); // Assuming your model is named Categories
 
 const categoriesController = {

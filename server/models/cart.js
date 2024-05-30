@@ -30,7 +30,6 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Cart",
     }
   );
-  // Cart.sync({ alter: true });
   return Cart;
 }
 };
